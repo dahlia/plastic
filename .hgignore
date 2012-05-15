@@ -1,0 +1,7 @@
+syntax:glob
+docs/_build
+.tox
+.*.swp
+*.egg-info
+*.egg
+*.pyc

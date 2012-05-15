@@ -1,0 +1,4 @@
+
+.. automodule:: plastic.app
+   :members:
+
