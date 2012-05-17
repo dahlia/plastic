@@ -5,7 +5,7 @@ Compared to "giants"
 --------------------
 
 There have been several "giants" in web framework world.  While Plastic inherits
-most of good things from these frameworks, it's also made some key differences
+most of good things from these frameworks, it has made some key differences
 from them.
 
 
@@ -26,11 +26,11 @@ No monolithic configuration
    configuration.
 
 Persistence agnostic
-   The one of main features Django provides is ORM.  Persistent objects
-   however can be vary in production.  You may want to use SQLAlchemy_
+   The one of main features Django provides is ORM.  However, persistent
+   objects can vary in production.  You may want to use SQLAlchemy_
    which is more powerful than Django ORM.  There are some enthusiasts of
    ZODB_ as well.  It's the age of NoSQL.  You may want to use Redis_
-   through Sider_ or MongoDB_ using MongoAlchemy_.  Moreover some applications
+   through Sider_ or MongoDB_ using MongoAlchemy_.  Moreover, some applications
    don't have persist model objects *at all*.  Some applications are more
    about *computations* than *data*.
 
@@ -62,10 +62,10 @@ Routing by decorators
        def person(request, person_id):
            return '...'
 
-   You don't need switch between two or more files (:file:`urls.py` and
+   You do not need switch between two or more files (:file:`urls.py` and
    :file:`views.py`) to map URL patterns to view functions.
 
-   Moreover Plastic uses Werkzeug's routing system, so you have not to use
+   Moreover, Plastic uses Werkzeug's routing system, so you have not to use
    regular expressions that are hard to read and not so suitable for URL
    patterns to route and can use Werkzeug's small URL pattern language
    that are easy to extend instead.  (Compare ``r'^people/(?P<person_id>\d+)$'``
