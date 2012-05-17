@@ -27,7 +27,7 @@ setup(
     maintainer='Hong Minhee',
     maintainer_email='minhee' '@' 'dahlia.kr',
     url='https://bitbucket.org/dahlia/plastic',
-    install_requires=['Werkzeug'],
+    install_requires=['Werkzeug >= 0.8'],
     tests_require=['Attest'],
     test_loader='attest:auto_reporter.test_loader',
     test_suite='plastictests.tests',

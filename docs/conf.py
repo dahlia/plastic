@@ -13,6 +13,9 @@
 
 import sys, os.path
 
+# Whether it is built by ReadTheDocs.org
+readthedocs = os.environ.get('READTHEDOCS', '') == 'True'
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -108,7 +111,7 @@ html_theme = 'default'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = 'Plastic ' + VERSION
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
@@ -248,4 +251,14 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+if readthedocs:
+    intersphinx_mapping = {
+        'python': ('http://python.readthedocs.org/en/v2.7.2/', None),
+        'werkzeug': ('http://werkzeug.readthedocs.org/en/latest/', None)
+    }
+else:
+    intersphinx_mapping = {
+        'python': ('http://docs.python.org/', None),
+        'werkzeug': ('http://werkzeug.pocoo.org/docs/', None)
+    }
+
