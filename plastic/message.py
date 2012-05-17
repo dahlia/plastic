@@ -19,8 +19,15 @@ class Request(BaseRequest):
 
     """
 
-    # (:class:`basestring`) The requested endpoint.
+    #: (:class:`basestring`) The requested endpoint.
     endpoint = None
+
+    #: (:class:`~plastic.app.BaseApp`) The requested application instance.
+    app = None
+
+    #: (:class:`~plastic.context.Context`) The context storage, which is
+    #: a kind of :class:`dict`.  Keys can be accessed as like attributes.
+    context = None
 
     def __init__(self, environ, app, endpoint, populate_request=True,
                  shallow=False):
