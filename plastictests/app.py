@@ -54,11 +54,14 @@ def add_rule():
 
     """
     def test_person(request, name):
+        assert request.app._id == 'test'
+        assert request.endpoint == 'test_person'
         return '[{0}] {1}, {2} {3}'.format(
             request.endpoint, name, request.method, request.path)
     App = BaseApp.clone()
     App.add_rule(Rule('/people/<name>', endpoint='test_person'), test_person)
     app = App()
+    app._id = 'test'
     client = Client(app, Response)
     response = client.get('/people/hongminhee')
     assert response.status_code == 200
@@ -79,9 +82,12 @@ def route():
     App = BaseApp.clone()
     @App.route('/people/<name>')
     def test_person(request, name):
+        assert request.app._id == 'test'
+        assert request.endpoint == 'test_person'
         return '[{0}] {1}, {2} {3}'.format(
             request.endpoint, name, request.method, request.path)
     app = App()
+    app._id = 'test'
     client = Client(app, Response)
     response = client.get('/people/hongminhee')
     assert response.status_code == 200

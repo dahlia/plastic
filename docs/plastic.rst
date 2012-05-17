@@ -5,6 +5,7 @@
       :maxdepth: 2
 
       plastic/app
+      plastic/message
       plastic/context
       plastic/version
 

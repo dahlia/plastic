@@ -6,8 +6,9 @@ import sys
 import dis
 
 from werkzeug.routing import Map, Rule, RequestRedirect
-from werkzeug.wrappers import Request, Response
 from werkzeug.exceptions import HTTPException, NotFound
+
+from .message import Request, Response
 
 
 class BaseApp(object):
@@ -138,8 +139,7 @@ class BaseApp(object):
                 except KeyError:
                     result = NotFound()
                 else:
-                    request = Request(environ)  # FIXME: custom request cls
-                    request.endpoint = endpoint
+                    request = Request(environ, app=self, endpoint=endpoint)
                     result = view_func(request, **values)
                     if isinstance(result, str):
                         result = Response(result)
