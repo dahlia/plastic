@@ -25,7 +25,59 @@ No monolithic configuration
    development, testing and production environments, and load the suitable
    configuration.
 
+Persistence agnostic
+   The one of main features Django provides is ORM.  Persistent objects
+   however can be vary in production.  You may want to use SQLAlchemy_
+   which is more powerful than Django ORM.  There are some enthusiasts of
+   ZODB_ as well.  It's the age of NoSQL.  You may want to use Redis_
+   through Sider_ or MongoDB_ using MongoAlchemy_.  Moreover some applications
+   don't have persist model objects *at all*.  Some applications are more
+   about *computations* than *data*.
+
+   Plastic is persistence agnostic and you can freely choose what you want to
+   use for persistence.
+
+Routing by decorators
+   Django's URL router requires the table to be assembled in :file:`urls.py`::
+
+       from django.conf.urls.defaults import patterns, url
+
+       urlpatterns = patterns('',
+           url(r'^$', 'myapp.home'),
+           url(r'^people$', 'myapp.people'),
+           url(r'^people/(?P<person_id>\d+)$', 'myapp.person')
+       )
+
+   Plastic uses decorators to route URL patterns to view functions::
+
+       @App.route('/')
+       def home(request):
+           return '...'
+
+       @App.route('/people')
+       def people(request):
+           return '...'
+
+       @App.route('/people/<int:person_id>')
+       def person(request, person_id):
+           return '...'
+
+   You don't need switch between two or more files (:file:`urls.py` and
+   :file:`views.py`) to map URL patterns to view functions.
+
+   Moreover Plastic uses Werkzeug's routing system, so you have not to use
+   regular expressions that are hard to read and not so suitable for URL
+   patterns to route and can use Werkzeug's small URL pattern language
+   that are easy to extend instead.  (Compare ``r'^people/(?P<person_id>\d+)$'``
+   to ``'/people/<int:person_id>'`` in the above examples. :-)
+
 .. _Django: https://www.djangoproject.com/
+.. _SQLAlchemy: http://www.sqlalchemy.org/
+.. _ZODB: http://www.zodb.org/
+.. _Redis: http://redis.io/
+.. _Sider: http://sider.dahlia.kr/
+.. _MongoDB: http://www.mongodb.org/
+.. _MongoAlchemy: http://www.mongoalchemy.org/
 
 
 Compared to Flask_
