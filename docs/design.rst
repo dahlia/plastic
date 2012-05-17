@@ -4,9 +4,9 @@ Design decisions
 Compared to "giants"
 --------------------
 
-There have been several "giants" in web framework world.  While Plastic inherits
-most of good things from these frameworks, it has made some key differences
-from them.
+There have been several "giants" in web framework world.  While Plastic inherited
+from those frameworks, there are key differences between Plastic and those
+frameworks.
 
 
 Compared to Django_
