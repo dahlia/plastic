@@ -116,13 +116,13 @@ class BaseApp(object):
         self.routing_map = Map(self.rules, strict_slashes=True)
 
     def __call__(self, environ, start_response):
-        return self.wsgi_function(environ, start_response)
+        return self.wsgi_app(environ, start_response)
 
-    def wsgi_function(self, environ, start_response):
+    def wsgi_app(self, environ, start_response):
         """The actual WSGI function.  Replace it when the application
-        should be wrapped by middlewares e.g.::
+        should be wrapped by middlewares::
 
-            app.wsgi_function = Middleware(app.wsgi_function)
+            app.wsgi_app = Middleware(app.wsgi_app)
 
         """
         bound = self.routing_map.bind_to_environ(environ)
