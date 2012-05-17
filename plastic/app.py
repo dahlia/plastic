@@ -120,7 +120,8 @@ class BaseApp(object):
 
     def wsgi_app(self, environ, start_response):
         """The actual WSGI function.  Replace it when the application
-        should be wrapped by middlewares::
+        should be wrapped by middlewares.
+        ::
 
             app.wsgi_app = Middleware(app.wsgi_app)
 
