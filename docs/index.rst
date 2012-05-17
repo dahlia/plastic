@@ -6,9 +6,14 @@
 Plastic
 =======
 
+Plastic is a Python web framework built on top of Werkzeug_.
+
+.. _Werkzeug: http://werkzeug.pocoo.org/
+
 .. toctree::
    :maxdepth: 2
 
+   design
    plastic
 
 

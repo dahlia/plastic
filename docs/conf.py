@@ -254,11 +254,13 @@ texinfo_documents = [
 if readthedocs:
     intersphinx_mapping = {
         'python': ('http://python.readthedocs.org/en/v2.7.2/', None),
-        'werkzeug': ('http://werkzeug.readthedocs.org/en/latest/', None)
+        'werkzeug': ('http://werkzeug.readthedocs.org/en/latest/', None),
+        'flask': ('http://flask.readthedocs.org/en/latest/', None)
     }
 else:
     intersphinx_mapping = {
         'python': ('http://docs.python.org/', None),
-        'werkzeug': ('http://werkzeug.pocoo.org/docs/', None)
+        'werkzeug': ('http://werkzeug.pocoo.org/docs/', None),
+        'flask': ('http://flask.pocoo.org/docs/', None)
     }
 
