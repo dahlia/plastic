@@ -7,5 +7,6 @@
       plastic/app
       plastic/message
       plastic/context
+      plastic/warnings
       plastic/version
 

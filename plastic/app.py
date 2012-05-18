@@ -2,14 +2,18 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 """
+from __future__ import absolute_import
+
 import sys
 import dis
+import warnings
 
 from werkzeug.routing import Map, Rule, RequestRedirect
 from werkzeug.exceptions import HTTPException, NotFound
 from werkzeug.serving import run_simple
 
 from .message import Request, Response
+from .warnings import AppWarning
 
 
 class BaseApp(object):
@@ -132,6 +136,10 @@ class BaseApp(object):
         return decorate
 
     def __init__(self):
+        if type(self) is BaseApp:
+            warnings.warn('you probably wanted to BaseApp.clone() instead of '
+                          'making an instance of BaseApp',
+                          category=AppWarning, stacklevel=2)
         self.endpoints = self.endpoints.copy()
         self.routing_map = Map(self.rules, strict_slashes=True)
 

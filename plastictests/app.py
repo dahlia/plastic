@@ -1,9 +1,12 @@
+import warnings
+
 from attest import Tests, assert_hook, raises
 from werkzeug.test import Client
 from werkzeug.routing import Rule
 from werkzeug.wrappers import Response
 
 from plastic.app import BaseApp
+from plastic.warnings import AppWarning
 
 
 tests = Tests()
@@ -35,6 +38,18 @@ def app_clone():
     assert SimpleApp4.__module__ == 'mod.name'
     assert SimpleApp4.__name__ == 'SimpleApp4'
     assert SimpleApp4.test_attr == [1, 2, 3]
+
+
+@tests.test
+def warn_baseapp_init():
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        BaseApp()
+        assert issubclass(w[0].category, AppWarning)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        BaseApp.clone()()
+        assert len(w) == 0
 
 
 @tests.test
