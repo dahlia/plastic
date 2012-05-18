@@ -12,7 +12,25 @@ from .message import Request, Response
 
 
 class BaseApp(object):
-    """The application base class."""
+    """The application base class.  In order to make an application
+    you have to inherit this class.  As you know Python's subclassing
+    can be done like::
+
+        from plastic.app import BaseApp
+
+        class MyApp(BaseApp):
+            pass
+
+    However in most cases you don't have to fill its body but
+    simply :meth:`clone()`::
+
+        from plastic.app import BaseApp
+
+        MyApp = BaseApp.clone()
+
+    Use :meth:`route()` class method for routing.
+
+    """
 
     #: (:class:`collections.Mapping`) The :class:`dict` of endpoints to
     #: view functions.
