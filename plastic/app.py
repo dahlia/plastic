@@ -7,6 +7,7 @@ import dis
 
 from werkzeug.routing import Map, Rule, RequestRedirect
 from werkzeug.exceptions import HTTPException, NotFound
+from werkzeug.serving import run_simple
 
 from .message import Request, Response
 
@@ -165,4 +166,23 @@ class BaseApp(object):
             pass
         response = Response.force_type(result, environ)
         return response(environ, start_response)
+
+    def run(self, host='127.0.0.1', port=5555, debug=True, **options):
+        """Starts serving the application.
+
+        :param host: the hostname to listen.  default is ``'127.0.0.1'``
+                     (localhost)
+        :type host: :class:`basestring`
+        :param port: the port number to listen.  default is 5555
+        :type port: :class:`int`
+        :param debug: use debugger and reloader.  default is ``True``
+        :type debug: :class:`bool`
+        :param \*\*options: other options to be passed to
+                            :func:`werkzeug.routing.run_simple()` function
+
+        """
+        options.setdefault('use_reloader', debug)
+        options.setdefault('use_debugger', debug)
+        options.setdefault('use_evalex', debug)
+        run_simple(hostname=host, port=port, application=self, **options)
 
