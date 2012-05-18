@@ -105,7 +105,7 @@ Factory by default
        App = BaseApp.clone()
 
        @App.route('/')
-       def home():
+       def home(request):
            return 'hello'
 
        if __name__ == '__main__':
