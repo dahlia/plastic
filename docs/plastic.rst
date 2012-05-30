@@ -7,6 +7,7 @@
       plastic/app
       plastic/message
       plastic/context
+      plastic/resourcedir
       plastic/warnings
       plastic/version
 
