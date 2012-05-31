@@ -3,7 +3,6 @@
 
 """
 import collections
-import contextlib
 
 from pkg_resources import (resource_exists, resource_isdir, resource_listdir,
                            resource_stream)
@@ -39,7 +38,7 @@ class ResourceDirectory(collections.Mapping):
             return type(self)(self.package, subname)
         elif resource_exists(self.package, subname):
             file_ = resource_stream(self.package, subname)
-            return contextlib.closing(file_)
+            return Resource(file_)
         raise KeyError(name)
 
     def __len__(self):
@@ -47,4 +46,29 @@ class ResourceDirectory(collections.Mapping):
         for _ in self:
             i += 1
         return i
+
+
+class Resource(object):
+    """Readable file object provided by :class:`ResourceDirectory` mapping
+    objects.  You can treat this simply as file object.  It also is a
+    context manager, so you can use it using :keyword:`with`.
+
+    :param file_: file to wrap
+
+    """
+
+    def __init__(self, file_):
+        self.file_ = file_
+
+    def read(self, *args, **kwargs):
+        return self.file_.read(*args, **kwargs)
+
+    def close(self):
+        self.file_.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()
 

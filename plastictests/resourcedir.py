@@ -39,6 +39,10 @@ def rdir_contains():
 
 @tests.test
 def rdir_getitem():
+    f = rdir['a']
+    read = f.read().strip()
+    f.close()
+    assert read == 'a'
     with rdir['a'] as f:
         read = f.read().strip()
         assert read == 'a'
