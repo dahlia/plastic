@@ -6,6 +6,7 @@ from werkzeug.routing import Rule
 from werkzeug.wrappers import Response
 
 from plastic.app import BaseApp
+from plastic.exceptions import RenderError
 from plastic.warnings import AppWarning
 
 
@@ -33,11 +34,12 @@ def app_clone():
     assert issubclass(SimpleApp3, BaseApp)
     assert SimpleApp3.__module__ == 'mod.name'
     assert SimpleApp3.__name__ == 'SimpleApp3'
-    SimpleApp4 = BaseApp.clone('mod.name', 'SimpleApp4', test_attr=[1, 2, 3])
+    SimpleApp4 = BaseApp.clone('mod.name', 'SimpleApp4',
+                               template_path='views/')
     assert issubclass(SimpleApp4, BaseApp)
     assert SimpleApp4.__module__ == 'mod.name'
     assert SimpleApp4.__name__ == 'SimpleApp4'
-    assert SimpleApp4.test_attr == [1, 2, 3]
+    assert SimpleApp4.template_path == 'views/'
 
 
 @tests.test
@@ -88,6 +90,25 @@ def add_rule():
 
 
 @tests.test
+def add_template_engine():
+    def t1(request, path, values):
+        return 't1: ' + repr((request, path, values))
+    def t2(request, path, values):
+        return 't2: ' + repr((request, path, values))
+    App = BaseApp.clone()
+    App.add_template_engine('t1', t1)
+    App.add_template_engine('t2', t2)
+    assert not BaseApp.template_engines
+    assert len(App.template_engines) == 2
+    assert App.template_engines['t1'] is t1
+    assert App.template_engines['t2'] is t2
+    with raises(ValueError):
+        App.add_template_engine('t2', t2)
+    with raises(TypeError):
+        App.add_template_engine('t3', 1234)
+
+
+@tests.test
 def route():
     """BaseApp.route() method is a general decorator to add new
     routing rule.  It accepts the same arguments to werkzeug.routing.Rule
@@ -111,4 +132,66 @@ def route():
     assert response.status_code == 200
     assert response.data == \
            '[test_person] hongminhee, DELETE /people/hongminhee'
+
+
+@tests.test
+def template_engine():
+    App = BaseApp.clone()
+    @App.template_engine('t1')
+    def t1(request, path, values):
+        return 't1: ' + repr((request, path, values))
+    @App.template_engine('t2')
+    def t2(request, path, values):
+        return 't2: ' + repr((request, path, values))
+    assert not BaseApp.template_engines
+    assert len(App.template_engines) == 2
+    assert App.template_engines['t1'] is t1
+    assert App.template_engines['t2'] is t2
+
+
+@tests.test
+def render_template():
+    App = BaseApp.clone()
+    @App.template_engine('t1')
+    def t1(request, path, values):
+        with request.app.template_directory[path] as template:
+            return template.read().format(request=request, **values)
+    @App.template_engine('t2')
+    def t2(request, path, values):
+        context = {'request': request}
+        context.update(values)
+        with request.app.template_directory[path] as template:
+            return template.read() % context
+    @App.route('/one')
+    def one(request):
+        return request.app.render_template(
+            request, 'render_template_one.html',
+            {'a': 'hello'}, b=123
+        )
+    @App.route('/two')
+    def two(request):
+        return request.app.render_template(
+            request, 'render_template_two.html',
+            {'a': 'world'}, b=456
+        )
+    error = [None]
+    @App.route('/three')
+    def three(request):
+        try:
+            return request.app.render_template(request,
+                                               'render_template_three.html')
+        except RenderError as e:
+            error[0] = e
+            raise
+    client = Client(App(), Response)
+    response = client.get('/one')
+    assert response.status_code == 200
+    assert response.data.strip() == 't1: /one, hello, 123'
+    response = client.get('/two')
+    assert response.status_code == 200
+    assert (response.data.strip() ==
+            "t2: <Request 'http://localhost/two' [GET]>, world, 456")
+    response = client.get('/three')
+    assert response.status_code == 406
+    assert isinstance(error[0], RenderError)
 

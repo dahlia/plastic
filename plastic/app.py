@@ -4,15 +4,19 @@
 """
 from __future__ import absolute_import
 
-import sys
 import dis
+import itertools
+import sys
 import warnings
 
-from werkzeug.routing import Map, Rule, RequestRedirect
+from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import HTTPException, NotFound
+from werkzeug.routing import Map, RequestRedirect, Rule
 from werkzeug.serving import run_simple
 
+from .exceptions import RenderError
 from .message import Request, Response
+from .resourcedir import ResourceDirectory
 from .warnings import AppWarning
 
 
@@ -43,6 +47,15 @@ class BaseApp(object):
 
     #: (:class:`collections.Sequence`) The list of routing rules.
     rules = []
+
+    #: (:class:`basestring`) The path to the directory which
+    #: contains template files.  It has to be relative to the application
+    #: module.  It can be overridden.  Default is :file:`templates/`.
+    template_path = 'templates/'
+
+    #: (:class:`~werkzeug.datastructures.ImmutableDict`) The immutable
+    #: dictionary of suffix to registered templating functions.
+    template_engines = ImmutableDict()
 
     @classmethod
     def clone(cls, __module__=None, __name__=None, **values):
@@ -108,6 +121,42 @@ class BaseApp(object):
         cls.endpoints[rule.endpoint] = function
 
     @classmethod
+    def add_template_engine(cls, suffix, function):
+        """Registers a templating ``function`` to the given ``suffix``.
+        The function should take three arguments and returns its rendering
+        result:
+
+        .. function:: add_template_engine.function(request, path, values):
+
+           :param request: the current request object
+           :type request: :class:`~plastic.message.Request`
+           :param path: the path of the template file.  it can be a key
+                        of :attr:`~BaseApp.template_directory` mapping
+                        object
+           :type path: :class:`basestring`
+           :param values: the values to be passed to the template
+           :type values: :class:`collections.Mapping`
+           :returns: the rendering result
+           :rtype: :class:`basestring`
+
+        :param suffix: the filename suffix (without period character)
+                       to register the template engine e.g. ``'mako'``
+        :type suffix: :class:`basestring`
+        :param function: templating function.  see also :func:`function()`
+                         for its signature
+        :type function: :class:`collections.Callable`
+
+        """
+        if not callable(function):
+            raise TypeError('function must be callable, but ' +
+                            repr(function) + ' seems not')
+        if suffix in cls.template_engines:
+            raise ValueError('suffix ' + repr(suffix) + ' already exists')
+        copy = cls.template_engines.iteritems()
+        rest = [(suffix, function)]
+        cls.template_engines = ImmutableDict(itertools.chain(copy, rest))
+
+    @classmethod
     def route(cls, *rule_args, **rule_kwargs):
         """The function decorator which maps the path to the decorated
         view function.
@@ -135,8 +184,35 @@ class BaseApp(object):
             return function
         return decorate
 
+    @classmethod
+    def template_engine(cls, suffix):
+        """The function decorator which makes the given ``function``
+        the template engine of the ``suffix``.
+        ::
+
+            # The following example has several issues.  Do not C&P
+            # it into your program.
+            from mako.template import Template
+
+            @App.template_engine(suffix='mako')
+            def render_mako(request, path, values):
+                with request.app.template_directory[path] as f:
+                    template = Template(f.read())
+                return template.render(**values)
+
+        :param suffix: the filename suffix (without period character)
+                       to register the template engine e.g. ``'mako'``
+        :type suffix: :class:`basestring`
+
+        """
+        def decorate(function):
+            cls.add_template_engine(suffix, function)
+            return function
+        return decorate
+
     def __init__(self):
-        if type(self) is BaseApp:
+        cls = type(self)
+        if cls is BaseApp:
             warnings.warn('you probably wanted to BaseApp.clone() instead of '
                           'making an instance of BaseApp',
                           category=AppWarning, stacklevel=2)
@@ -174,6 +250,51 @@ class BaseApp(object):
             pass
         response = Response.force_type(result, environ)
         return response(environ, start_response)
+
+    @property
+    def template_directory(self):
+        """(:class:`~plastic.resourcedir.ResourceDirectory`) The mapping
+        object of the template directory.
+
+        """
+        return ResourceDirectory(type(self).__module__, self.template_path)
+
+    def render_template(self, request, path, values={}, **keywords):
+        """Renders the response using registered :attr:`template_engines`.
+
+        :param request: a request which make it to render
+        :type request: :class:`~plastic.message.Request`
+        :param path: a path to template files without specific suffix
+        :type path: :class:`basestring`
+        :param values: a dictionary of values to pass to template
+        :type values: :class:`collections.Mapping`
+        :param \*\*keywords: the same to ``values`` except these are passed
+                             by keywords
+        :returns: a rendered result
+        :rtype: :class:`basestring`
+        :raises plastic.exceptions.RenderError:
+           when there are no matched template files
+
+        """
+        directory = self.template_directory
+        try:
+            dirname, basename = path.rsplit('/', 1)
+        except ValueError:
+            dirname = ''
+            basename = path
+        else:
+            dirname += '/'
+            directory = directory[dirname]
+        apply_name = (basename + '.').__add__
+        for suffix, render in self.template_engines.iteritems():
+            applied_name = apply_name(suffix)
+            if applied_name in directory:
+                break
+        else:
+            raise RenderError('no matched template files: ' + path)
+        values = values.copy()
+        values.update(keywords)
+        return render(request, dirname + applied_name, values)
 
     def run(self, host='127.0.0.1', port=5555, debug=True, **options):
         """Starts serving the application.
