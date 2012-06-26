@@ -7,6 +7,7 @@
       plastic/app
       plastic/message
       plastic/context
+      plastic/rendering
       plastic/resourcedir
       plastic/exceptions
       plastic/warnings

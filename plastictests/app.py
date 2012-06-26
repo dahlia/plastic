@@ -7,6 +7,7 @@ from werkzeug.wrappers import Response
 
 from plastic.app import BaseApp
 from plastic.exceptions import RenderError
+from plastic.rendering import render_template
 from plastic.warnings import AppWarning
 
 
@@ -150,7 +151,7 @@ def template_engine():
 
 
 @tests.test
-def render_template():
+def render_template_():
     App = BaseApp.clone()
     @App.template_engine('t1')
     def t1(request, path, values):
@@ -162,36 +163,47 @@ def render_template():
         context.update(values)
         with request.app.template_directory[path] as template:
             return template.read() % context
-    @App.route('/one')
-    def one(request):
-        return request.app.render_template(
-            request, 'render_template_one.html',
-            {'a': 'hello'}, b=123
-        )
-    @App.route('/two')
-    def two(request):
-        return request.app.render_template(
-            request, 'render_template_two.html',
-            {'a': 'world'}, b=456
-        )
-    error = [None]
-    @App.route('/three')
-    def three(request):
-        try:
-            return request.app.render_template(request,
-                                               'render_template_three.html')
-        except RenderError as e:
-            error[0] = e
-            raise
-    client = Client(App(), Response)
-    response = client.get('/one')
-    assert response.status_code == 200
-    assert response.data.strip() == 't1: /one, hello, 123'
-    response = client.get('/two')
-    assert response.status_code == 200
-    assert (response.data.strip() ==
-            "t2: <Request 'http://localhost/two' [GET]>, world, 456")
-    response = client.get('/three')
-    assert response.status_code == 406
-    assert isinstance(error[0], RenderError)
+    for way in 'app', 'helper':
+        if way == 'app':
+            def get_func(request):
+                return request.app.render_template
+        elif way == 'helper':
+            def get_func(request):
+                return render_template
+        else:
+            assert False, 'something wrong'
+        @App.route('/' + way + '/one')
+        def one(request):
+            return get_func(request)(
+                request, 'render_template_one.html',
+                {'a': 'hello'}, b=123
+            )
+        @App.route('/' + way + '/two')
+        def two(request):
+            return get_func(request)(
+                request, 'render_template_two.html',
+                {'a': 'world'}, b=456
+            )
+        error = [None]
+        @App.route('/' + way + '/three')
+        def three(request):
+            try:
+                return get_func(request)(request,
+                                         'render_template_three.html')
+            except RenderError as e:
+                error[0] = e
+                raise
+    for way in 'app', 'helper':
+        client = Client(App(), Response)
+        response = client.get('/' + way + '/one')
+        assert response.status_code == 200, way
+        assert response.data.strip() == 't1: /' + way +'/one, hello, 123', way
+        response = client.get('/' + way + '/two')
+        assert response.status_code == 200, way
+        assert (response.data.strip() ==
+                "t2: <Request 'http://localhost/" + way + "/two' [GET]>, "
+                'world, 456'), way
+        response = client.get('/' + way + '/three')
+        assert response.status_code == 406, way
+        assert isinstance(error[0], RenderError), way
 

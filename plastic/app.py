@@ -217,7 +217,8 @@ class BaseApp(object):
                           'making an instance of BaseApp',
                           category=AppWarning, stacklevel=2)
         self.endpoints = self.endpoints.copy()
-        self.routing_map = Map(self.rules, strict_slashes=True)
+        rules = (rule.empty() for rule in self.rules)
+        self.routing_map = Map(rules, strict_slashes=True)
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -261,6 +262,20 @@ class BaseApp(object):
 
     def render_template(self, request, path, values={}, **keywords):
         """Renders the response using registered :attr:`template_engines`.
+
+        You have to pass the ``path`` *without specific suffix*.
+        The last suffix will be used for determining what template
+        engine to use.  For example, if there is
+        :file:`user_profile.html.mako` file in the :attr:`template_path`
+        and ``'mako'`` is associated to Mako template engine in
+        :attr:`template_engines` mapping, the following code will
+        find :file:`user_profile.html.mako` (not :file:`user_profile.html`)
+        and render it using Mako::
+
+            app.render_template(request, 'user_profile.html')
+
+        In other words, you have to append a suffix to determine
+        what template engine to use into filenames of templates.
 
         :param request: a request which make it to render
         :type request: :class:`~plastic.message.Request`
