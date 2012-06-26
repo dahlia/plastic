@@ -31,7 +31,7 @@ def rdir_contains():
     assert 'c/c/a' in rdir
     assert 'c/c/b' not in rdir
     assert 'c/d' in rdir
-    assert 'c/d/a' not in rdir
+    assert 'c/d/b' not in rdir
     assert 'c/e' not in rdir
     assert 'd' in rdir
     assert 'e' not in rdir
@@ -82,18 +82,19 @@ def rdir_getitem():
 
 @tests.test
 def rdir_iter():
-    expected = set(['a', 'b', 'c', 'c/a', 'c/b', 'c/c', 'c/c/a', 'c/d', 'd'])
+    expected = set(['a', 'b', 'c', 'c/a', 'c/b', 'c/c', 'c/c/a', 'c/d',
+                    'c/d/a', 'd', 'd/a'])
     assert set(rdir) == expected
-    assert set(rdir['c']) == set(['a', 'b', 'c', 'c/a', 'd'])
+    assert set(rdir['c']) == set(['a', 'b', 'c', 'c/a', 'd', 'd/a'])
     assert set(rdir['c']['c']) == set(['a'])
     assert set(rdir['c/c']) == set(['a'])
 
 
 @tests.test
 def rdir_len():
-    assert len(rdir) == 9
-    assert len(rdir['c']) == 5
+    assert len(rdir) == 11
+    assert len(rdir['c']) == 6
     assert len(rdir['c']['c']) == 1
     assert len(rdir['c/c']) == 1
-    assert len(rdir['d']) == 0
+    assert len(rdir['d']) == 1
 
