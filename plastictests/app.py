@@ -129,6 +129,27 @@ def add_serializer():
 
 
 @tests.test
+def associate_mimetypes():
+    App = BaseApp.clone()
+    App.associate_mimetypes(html='text/html', xml='text/xml')
+    App.associate_mimetypes({'text/plain': 'md', 'text/x-markdown': 'md'})
+    assert not BaseApp.mimetype_mapping
+    assert len(App.mimetype_mapping) == 4
+    assert App.mimetype_mapping['text/html'] == 'html'
+    assert App.mimetype_mapping['text/xml'] == 'xml'
+    assert App.mimetype_mapping['text/plain'] == 'md'
+    assert App.mimetype_mapping['text/x-markdown'] == 'md'
+    with raises(TypeError):
+        App.associate_mimetypes()
+    with raises(TypeError):
+        App.associate_mimetypes([1, 2])
+    with raises(ValueError):
+        App.associate_mimetypes(xhtml='text/html')
+    with raises(ValueError):
+        App.associate_mimetypes({'text/plain': 'txt'})
+
+
+@tests.test
 def route():
     """BaseApp.route() method is a general decorator to add new
     routing rule.  It accepts the same arguments to werkzeug.routing.Rule

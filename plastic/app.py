@@ -193,6 +193,63 @@ class BaseApp(object):
         cls.mimetype_mapping = ImmutableDict(itertools.chain(copy, rest))
 
     @classmethod
+    def associate_mimetypes(cls, mimetypes={}, **suffixes):
+        """Associates mimetype to suffix.  Associations made by this
+        are used by :func:`~plastic.rendering.render()` function.
+        For example::
+
+            from plastic.rendering import render
+
+            App.associate_mimetypes({
+                'text/plain': 'rst',
+                'text/x-rst': 'rst',
+                'text/html', 'html'
+            })
+
+            @App.route('/')
+            def home(request):
+                return render(request, None, 'main/home')
+
+        with the above setting when you make a request like:
+
+        .. sourcecode:: http
+
+           GET / HTTP/1.0
+           Accept: text/html
+
+        will find a template file ``main/home.html.*`` (``*`` is
+        suffix for template engine).
+
+        :param mimetypes: a mapping object of mimetypes to suffixes
+                          e.g. ``{'text/html': 'txt', 'text/xml': 'xml'}``
+        :type mimetypes: :class:`collections.Mapping`
+        :param \*\*suffixes: keyword arguments are interpreted as
+                             suffixes to mimetypes.  for example,
+                             passing ``txt='text/html'`` is equivalent
+                             to passing ``{'text/html': 'txt'}``
+
+        """
+        if not isinstance(mimetypes, collections.Mapping):
+            raise TypeError('mimetypes have to be a mapping object, not ' +
+                            repr(mimetypes))
+        if not (mimetypes or suffixes):
+            raise TypeError('one or more mimetypes/suffixes required')
+        mimetypes = mimetypes.items()
+        for mime, suffix in mimetypes:
+            if not isinstance(suffix, basestring):
+                raise ValueError('mimetype must be a string, not ' +
+                                 repr(mime))
+            if mime in cls.mimetype_mapping:
+                raise ValueError('mimetype {0!r} already exists'.format(mime))
+        for mime in suffixes.itervalues():
+            if mime in cls.mimetype_mapping:
+                raise ValueError('mimetype {0!r} already exists'.format(mime))
+        copy = cls.mimetype_mapping.iteritems()
+        suffix_items = ((mime, suffix) for suffix, mime in suffixes.iteritems())
+        chained = itertools.chain(copy, mimetypes, suffix_items)
+        cls.mimetype_mapping = ImmutableDict(chained)
+
+    @classmethod
     def route(cls, *rule_args, **rule_kwargs):
         """The function decorator which maps the path to the decorated
         view function.
