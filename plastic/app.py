@@ -4,6 +4,7 @@
 """
 from __future__ import absolute_import
 
+import collections
 import dis
 import itertools
 import sys
@@ -242,6 +243,42 @@ class BaseApp(object):
         """
         def decorate(function):
             cls.add_template_engine(suffix, function)
+            return function
+        return decorate
+
+    @classmethod
+    def serializer(cls, mimetypes):
+        """The function decorator which associate the given serializer
+        ``function`` with ``mimetypes``.
+        ::
+
+            import json
+            import plistlib
+
+            @App.serializer('application/json')
+            def serialize_json(request, value):
+                return json.dumps(value)
+
+            @App.serializer(['application/x-plist', 'text/xml'])
+            def serialize_plist(request, value):
+                return plistlib.writePlistToString(value)
+
+        :param mimetypes: one or more mimetypes to assiciate
+                          the ``function`` with.  it can be either
+                          a single string or multiple strings in
+                          an iterable e.g. ``'application/json'``,
+                          ``['application/xml', 'text/xml']``
+        :type mimetypes: :class:`basestring`, :class:`collections.Iterable`
+
+        """
+        if not isinstance(mimetypes, collections.Iterable):
+            raise TypeError('mimetypes have to be iterable or a string, not '
+                            + repr(mimetypes))
+        if isinstance(mimetypes, basestring):
+            mimetypes = mimetypes,
+        def decorate(function):
+            for mimetype in mimetypes:
+                cls.add_serializer(mimetype, function)
             return function
         return decorate
 

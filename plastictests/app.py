@@ -170,6 +170,22 @@ def template_engine():
 
 
 @tests.test
+def serializer():
+    App = BaseApp.clone()
+    @App.serializer('application/x-s1')
+    def s1(request, value):
+        return 's1: ' + repr((request, value))
+    @App.serializer(['application/x-s2', 'application/x-s3'])
+    def s2(request, value):
+        return 's2: ' + repr((request, value))
+    assert not BaseApp.mimetype_mapping
+    assert len(App.mimetype_mapping) == 3
+    assert App.mimetype_mapping['application/x-s1'] is s1
+    assert App.mimetype_mapping['application/x-s2'] is s2
+    assert App.mimetype_mapping['application/x-s3'] is s2
+
+
+@tests.test
 def render_template_():
     App = BaseApp.clone()
     @App.template_engine('t1')
