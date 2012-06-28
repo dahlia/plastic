@@ -128,10 +128,10 @@ class BaseApp(object):
     @classmethod
     def add_template_engine(cls, suffix, function):
         """Registers a templating ``function`` to the given ``suffix``.
-        The function should take three arguments and returns its rendering
-        result:
+        The ``function`` has to take three arguments and
+        return its rendering result:
 
-        .. function:: add_template_engine.function(request, path, values):
+        .. function:: add_template_engine.function(request, path, values)
 
            :param request: the current request object
            :type request: :class:`~plastic.message.Request`
@@ -227,7 +227,7 @@ class BaseApp(object):
         ::
 
             # The following example has several issues.  Do not C&P
-            # it into your program.
+            # it into your program to use Mako.
             from mako.template import Template
 
             @App.template_engine(suffix='mako')
