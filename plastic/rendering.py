@@ -2,7 +2,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 """
-from plastic.message import Request
+from .message import Request
 
 
 def render_template(request, path, values={}, **keywords):
