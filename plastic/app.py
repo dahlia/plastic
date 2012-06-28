@@ -216,7 +216,7 @@ class BaseApp(object):
             warnings.warn('you probably wanted to BaseApp.clone() instead of '
                           'making an instance of BaseApp',
                           category=AppWarning, stacklevel=2)
-        self.endpoints = self.endpoints.copy()
+        self.endpoints = dict(self.endpoints)
         rules = (rule.empty() for rule in self.rules)
         self.routing_map = Map(rules, strict_slashes=True)
 
