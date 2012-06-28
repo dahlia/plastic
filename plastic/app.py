@@ -57,6 +57,10 @@ class BaseApp(object):
     #: dictionary of suffix to registered templating functions.
     template_engines = ImmutableDict()
 
+    #: (:class:`~werkzeug.datastructures.ImmutableDict`) The immutable
+    #: dictionary of mimetype to registered renderers.
+    mimetype_mapping = ImmutableDict()
+
     @classmethod
     def clone(cls, __module__=None, __name__=None, **values):
         """Subclasses the application class.  It is a just shorthand of
@@ -155,6 +159,37 @@ class BaseApp(object):
         copy = cls.template_engines.iteritems()
         rest = [(suffix, function)]
         cls.template_engines = ImmutableDict(itertools.chain(copy, rest))
+
+    @classmethod
+    def add_serializer(cls, mimetype, function):
+        """Registers a ``function`` which serializes a value into
+        a string.  The ``funtion`` has to take two arguments and
+        return its serialized result.
+
+        .. function:: add_serializer.function(request, value)
+
+           :param request: the current request object
+           :type request: :class:`~plastic.message.Request`
+           :param value: a value to serialize into a string
+           :returns: a serialized result
+           :rtype: :class:`basestring`
+
+        :param mimetype: a mimetype to assiciate the ``function`` with
+                         e.g. ``'application/json'``
+        :type mimetype: :class:`basestring`
+        :param function: serializer function.  see also :func:`function()`
+                         for its signature
+        :type function: :class:`collections.Callable`
+
+        """
+        if not callable(function):
+            raise TypeError('function must be callable, but ' +
+                            repr(function) + ' seems not')
+        if mimetype in cls.mimetype_mapping:
+            raise ValueError('mimetype {0!r} already exists'.format(mimetype))
+        copy = cls.mimetype_mapping.iteritems()
+        rest = [(mimetype, function)]
+        cls.mimetype_mapping = ImmutableDict(itertools.chain(copy, rest))
 
     @classmethod
     def route(cls, *rule_args, **rule_kwargs):

@@ -110,6 +110,25 @@ def add_template_engine():
 
 
 @tests.test
+def add_serializer():
+    def s1(request, value):
+        return 's1: ' + repr((request, value))
+    def s2(request, value):
+        return 's2: ' + repr((request, value))
+    App = BaseApp.clone()
+    App.add_serializer('application/x-s1', s1)
+    App.add_serializer('application/x-s2', s2)
+    assert not BaseApp.mimetype_mapping
+    assert len(App.mimetype_mapping) == 2
+    assert App.mimetype_mapping['application/x-s1'] is s1
+    assert App.mimetype_mapping['application/x-s2'] is s2
+    with raises(ValueError):
+        App.add_serializer('application/x-s2', s2)
+    with raises(TypeError):
+        App.add_serializer('application/x-s3', 1234)
+
+
+@tests.test
 def route():
     """BaseApp.route() method is a general decorator to add new
     routing rule.  It accepts the same arguments to werkzeug.routing.Rule
