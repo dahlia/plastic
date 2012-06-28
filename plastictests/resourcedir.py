@@ -17,7 +17,11 @@ rdir = ResourceDirectory(__name__, 'resources')
 # │   ├── c
 # │   │   └── a
 # │   └── d
+# │       └── a
 # └── d
+#     └── a
+# 
+#     4 directories, 7 files
 
 
 @tests.test
