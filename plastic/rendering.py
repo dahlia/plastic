@@ -1,6 +1,21 @@
 """:mod:`plastic.rendering` --- Content rendering
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+This module provides generic content rendering to make
+response using requested :mailheader:`Accept` mimetypes.
+In HTTP terminology, it's called as **content negotiation**.
+
+Plastic provides two types of rendering methods:
+
+Template engines
+   It's for making responses that contains HTML.
+   A typical case of use this is showing web pages to clients
+   using their web browser.
+
+Serializers
+   It's for making responses that have structural data like JSON.
+   A typical case of use this is providing RESTful API to clients.
+
 """
 from werkzeug.exceptions import NotAcceptable
 
