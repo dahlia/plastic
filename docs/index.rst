@@ -18,6 +18,7 @@ Plastic is a Python web framework built on top of Werkzeug_.
    :maxdepth: 2
 
    design
+   examples
    plastic
 
 

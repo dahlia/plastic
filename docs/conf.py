@@ -11,7 +11,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os.path
+import sys, os.path, glob
 
 # Whether it is built by ReadTheDocs.org
 readthedocs = os.environ.get('READTHEDOCS', '') == 'True'
@@ -19,10 +19,8 @@ readthedocs = os.environ.get('READTHEDOCS', '') == 'True'
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(
-    0,
-    os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-)
+sys.path[:0] = [os.path.abspath('.'), os.path.abspath('..')]
+sys.path[2:2] = glob.glob(os.path.abspath(os.path.join('..', 'examples', '*')))
 
 from plastic.version import VERSION
 
