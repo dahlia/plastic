@@ -1,11 +1,12 @@
 from attest import Tests
 
 from plastic.version import VERSION, VERSION_INFO
-from . import app, context, message, rendering, resourcedir
+from . import app, config, context, message, rendering, resourcedir
 
 
 tests = Tests()
 tests.register(app.tests)
+tests.register(config.tests)
 tests.register(context.tests)
 tests.register(message.tests)
 tests.register(rendering.tests)
