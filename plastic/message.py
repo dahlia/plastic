@@ -2,6 +2,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 """
+from werkzeug.utils import cached_property
 from werkzeug.wrappers import Request as BaseRequest, Response as BaseResponse
 
 from .context import Context
@@ -37,6 +38,15 @@ class Request(BaseRequest):
         self.endpoint = endpoint
         self.app = app
         self.context = Context()
+
+    @cached_property
+    def session(self):
+        cookie_name = 'sess'
+        sid = self.cookies.get(cookie_name)
+        store = self.app.session_store
+        if sid:
+            return store.get(sid)
+        return store.new()
 
 
 class Response(BaseResponse):

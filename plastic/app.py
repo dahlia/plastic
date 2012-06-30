@@ -358,6 +358,9 @@ class BaseApp(object):
         self.routing_map = Map(rules, strict_slashes=True)
         self.config = Config()
         self.config.update(config)
+        # FIXME
+        from werkzeug.contrib.sessions import FilesystemSessionStore
+        self.session_store = FilesystemSessionStore()
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -370,6 +373,7 @@ class BaseApp(object):
             app.wsgi_app = Middleware(app.wsgi_app)
 
         """
+        request = None
         bound = self.routing_map.bind_to_environ(environ)
         try:
             try:
@@ -389,6 +393,11 @@ class BaseApp(object):
         except HTTPException as result:
             pass
         response = Response.force_type(result, environ)
+        if request is not None:
+            session = request.session
+            if session.should_save:
+                self.session_store.save(session)
+                response.set_cookie('sess', session.sid)
         return response(environ, start_response)
 
     @property
