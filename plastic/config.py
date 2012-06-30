@@ -6,11 +6,40 @@ from keyword import iskeyword
 from re import compile
 from tokenize import Name
 
+from werkzeug.utils import import_string
+
 __all__ = 'Config',
 
 
 class Config(dict):
     """Mapping object (subtype of :class:`dict`) to store configurations."""
+
+    def update_from_object(self, object_, overwrite=False):
+        """Updates configuration from arbitrary ``object_``.
+        ::
+
+            @config.update_from_object
+            class default_config:
+                debug = False
+                database_uri = 'sqlite://'
+
+        It ignores attributes that start with underscore and
+        keys that already exist until ``overwrite`` is ``True``.
+
+        :param object_: arbitrary object to update from,
+                        or import path of that if it's a string
+                        e.g. ``'myapp.configs:prod``
+        :param overwrite: keys that already exist are ignored by default.
+                          if ``True`` has given to this parameter,
+                          these are not overwritten
+        :type overwrite: :class:`bool`
+
+        """
+        if isinstance(object_, basestring):
+            object_ = import_string(object_)
+        for key in dir(object_):
+            if not key.startswith('_') and (overwrite or key not in self):
+                self[key] = getattr(object_, key)
 
     def update_unless_exists(self, mapping=(), **keywords):
         """Almost equivalent to :meth:`~dict.update()` except
