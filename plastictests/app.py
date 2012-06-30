@@ -56,6 +56,25 @@ def warn_baseapp_init():
 
 
 @tests.test
+def config():
+    """Each application instance should have their own (isolated each other)
+    configuration.
+
+    """
+    app1 = SimpleApp({'a': 1})
+    app2 = SimpleApp({'b': 2})
+    assert app1.config['a'] == 1
+    assert 'b' not in app1.config
+    assert app2.config['b'] == 2
+    assert 'a' not in app2.config
+    @app1.config.update_from_object
+    class test_config:
+        b = 3
+    assert app1.config['b'] == 3
+    assert app2.config['b'] == 2
+
+
+@tests.test
 def wsgi():
     """Instances of BaseApp (or its subtypes) should be WSGI compliant."""
     app = SimpleApp()

@@ -15,6 +15,7 @@ from werkzeug.exceptions import HTTPException, NotFound
 from werkzeug.routing import Map, RequestRedirect, Rule
 from werkzeug.serving import run_simple
 
+from .config import Config
 from .exceptions import RenderError
 from .message import Request, Response
 from .resourcedir import ResourceDirectory
@@ -41,6 +42,10 @@ class BaseApp(object):
     Use :meth:`route()` class method for routing.
 
     """
+
+    #: (:class:`~plastic.config.Config`) Each application instance's
+    #: configuration.
+    config = None
 
     #: (:class:`collections.Mapping`) The :class:`dict` of endpoints to
     #: view functions.
@@ -339,7 +344,10 @@ class BaseApp(object):
             return function
         return decorate
 
-    def __init__(self):
+    def __init__(self, config={}):
+        if not isinstance(config, collections.Mapping):
+            raise TypeError('config must be a mapping object, not ' +
+                            repr(config))
         cls = type(self)
         if cls is BaseApp:
             warnings.warn('you probably wanted to call BaseApp.clone() '
@@ -348,6 +356,8 @@ class BaseApp(object):
         self.endpoints = dict(self.endpoints)
         rules = (rule.empty() for rule in self.rules)
         self.routing_map = Map(rules, strict_slashes=True)
+        self.config = Config()
+        self.config.update(config)
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
