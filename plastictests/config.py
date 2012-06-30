@@ -1,3 +1,5 @@
+from os.path import dirname, join
+
 from attest import Tests, assert_hook
 
 from plastic.config import Config
@@ -27,6 +29,28 @@ def update_from_object():
     config['debug'] = False
     del config['database_uri']
     config.update_from_object(config_object, overwrite=True)
+    assert config['debug'] is True
+    assert config['database_uri'] == 'sqlite://'
+
+
+@tests.test
+def update_from_file():
+    config_filename = join(dirname(__file__), 'test.cfg')
+    config = Config()
+    config.update_from_file(config_filename)
+    assert config['debug'] is True
+    assert config['database_uri'] == 'sqlite://'
+    assert '_hidden' not in config
+    # should not overwrite
+    config['debug'] = False
+    del config['database_uri']
+    config.update_from_file(config_filename)
+    assert config['debug'] is False
+    assert config['database_uri'] == 'sqlite://'
+    # should overwrite
+    config['debug'] = False
+    del config['database_uri']
+    config.update_from_file(config_filename, overwrite=True)
     assert config['debug'] is True
     assert config['database_uri'] == 'sqlite://'
 

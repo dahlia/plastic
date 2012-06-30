@@ -4,7 +4,9 @@
 """
 from keyword import iskeyword
 from re import compile
+from os.path import abspath
 from tokenize import Name
+from types import ModuleType
 
 from werkzeug.utils import import_string
 
@@ -40,6 +42,33 @@ class Config(dict):
         for key in dir(object_):
             if not key.startswith('_') and (overwrite or key not in self):
                 self[key] = getattr(object_, key)
+
+    def update_from_file(self, filename, overwrite=False):
+        """Updates configuration from Python file.
+        For example, if there's :file:`dev.cfg`::
+
+            debug = False
+            database_uri = 'sqlite://'
+
+        so you can load it using :meth:`update_from_file()` method::
+
+            config.update_from_file('dev.cfg')
+
+        Like :meth:`update_from_object()` method, it also ignores
+        variables that start with underscore.
+
+        :param filename: the path of Python file to load
+        :type filename: :class:`basestring`
+        :param overwrite: keys that already exist are ignored by default.
+                          if ``True`` has given to this parameter,
+                          these are not overwritten
+        :type overwrite: :class:`bool`
+
+        """
+        module = ModuleType(filename)
+        module.__file__ = abspath(filename)
+        execfile(filename, module.__dict__)
+        self.update_from_object(module, overwrite)
 
     def update_unless_exists(self, mapping=(), **keywords):
         """Almost equivalent to :meth:`~dict.update()` except
