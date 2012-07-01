@@ -380,12 +380,17 @@ class BaseApp(object):
     #: (:class:`collections.Mapping`) The mapping of cookie settings
     #: sessions will use.  It has the following configuable keys:
     #:
-    #: - ``'key'``
-    #: - ``'max_age'``
-    #: - ``'domain'``
-    #: - ``'path'``
-    #: - ``'secure'``
-    #: - ``'httponly'``
+    #: - ``'key'`` (:class:`basestring`)
+    #: - ``'max_age'`` (:class:`numbers.Integral`)
+    #: - ``'domain'`` (:class:`basestring`)
+    #: - ``'path'`` (:class:`basestring`)
+    #: - ``'secure'`` (:class:`bool`)
+    #: - ``'httponly'`` (:class:`bool`)
+    #:
+    #: .. seealso::
+    #:
+    #:    Method :meth:`~werkzeug.wrappers.Response.set_cookie()`
+    #:       Sets a cookie.
     session_cookie = config_property('session_cookie')
 
     def __call__(self, environ, start_response):
