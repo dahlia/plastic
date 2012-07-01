@@ -218,7 +218,7 @@ class BaseApp(object):
             App.associate_mimetypes({
                 'text/plain': 'rst',
                 'text/x-rst': 'rst',
-                'text/html', 'html'
+                'text/html': 'html'
             })
 
             @App.route('/')
