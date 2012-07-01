@@ -203,7 +203,6 @@ def import_instance(expression, type_):
             kwargs = {}
             for match in expression_arguments_pattern.finditer(arguments):
                 keyword = match.group('keyword')
-                print (keyword, match.start(), offset, arguments)
                 if match.start() > offset or not keyword and kwargs:
                     raise ValueError(
                         'invalid expression:\n' + expression + '\n' +
