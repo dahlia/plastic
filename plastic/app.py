@@ -53,10 +53,6 @@ class BaseApp(object):
 
     """
 
-    #: (:class:`~plastic.config.Config`) Each application instance's
-    #: configuration.
-    config = None
-
     #: (:class:`collections.Mapping`) The :class:`dict` of endpoints to
     #: view functions.
     endpoints = {}
@@ -354,23 +350,9 @@ class BaseApp(object):
             return function
         return decorate
 
-    def __init__(self, config={}):
-        if not isinstance(config, collections.Mapping):
-            raise TypeError('config must be a mapping object, not ' +
-                            repr(config))
-        cls = type(self)
-        if cls is BaseApp:
-            warnings.warn('you probably wanted to call BaseApp.clone() '
-                          'instead of making an instance of BaseApp',
-                          category=AppWarning, stacklevel=2)
-        self.endpoints = dict(self.endpoints)
-        rules = (rule.empty() for rule in self.rules)
-        self.routing_map = Map(rules, strict_slashes=True)
-        self.config = Config(DEFAULT_CONFIG)
-        self.config.update(config)
-        self.session_store = import_instance(self.session_store, SessionStore)
-        self.config.setdefault('session_cookie', {}) \
-                   .setdefault('key', 'sessionid')
+    #: (:class:`~plastic.config.Config`) Each application instance's
+    #: configuration.
+    config = None
 
     #: (:class:`werkzeug.contrib.sessions.SessionStore`) The session store
     #: instance an application uses.  It's a proxy to ``'session_store'``
@@ -392,6 +374,24 @@ class BaseApp(object):
     #:    Method :meth:`werkzeug.wrappers.BaseResponse.set_cookie()`
     #:       Sets a cookie.
     session_cookie = config_property('session_cookie')
+
+    def __init__(self, config={}):
+        if not isinstance(config, collections.Mapping):
+            raise TypeError('config must be a mapping object, not ' +
+                            repr(config))
+        cls = type(self)
+        if cls is BaseApp:
+            warnings.warn('you probably wanted to call BaseApp.clone() '
+                          'instead of making an instance of BaseApp',
+                          category=AppWarning, stacklevel=2)
+        self.endpoints = dict(self.endpoints)
+        rules = (rule.empty() for rule in self.rules)
+        self.routing_map = Map(rules, strict_slashes=True)
+        self.config = Config(DEFAULT_CONFIG)
+        self.config.update(config)
+        self.session_store = import_instance(self.session_store, SessionStore)
+        self.config.setdefault('session_cookie', {}) \
+                   .setdefault('key', 'sessionid')
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
