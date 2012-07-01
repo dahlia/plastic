@@ -389,7 +389,7 @@ class BaseApp(object):
     #:
     #: .. seealso::
     #:
-    #:    Method :meth:`~werkzeug.wrappers.Response.set_cookie()`
+    #:    Method :meth:`werkzeug.wrappers.BaseResponse.set_cookie()`
     #:       Sets a cookie.
     session_cookie = config_property('session_cookie')
 
