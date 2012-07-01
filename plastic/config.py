@@ -8,9 +8,10 @@ from os.path import abspath
 from tokenize import Name
 from types import ModuleType
 
+from werkzeug._internal import _DictAccessorProperty
 from werkzeug.utils import import_string
 
-__all__ = 'Config', 'get_typename', 'import_instance'
+__all__ = 'Config', 'config_property', 'get_typename', 'import_instance'
 
 
 class Config(dict):
@@ -112,6 +113,15 @@ class Config(dict):
         elif literals:
             return '{0}({{{1}}})'.format(typename, literals)
         return '{0}({1})'.format(typename, keywords)
+
+
+class config_property(_DictAccessorProperty):
+    """Maps application properties to configuration values."""
+
+    read_only = False
+
+    def lookup(self, obj):
+        return obj.config
 
 
 expression_pattern = compile(

@@ -2,7 +2,9 @@ from os.path import dirname, join
 
 from attest import Tests, assert_hook, raises
 
-from plastic.config import Config, get_typename, import_instance
+from plastic.app import BaseApp
+from plastic.config import (Config, config_property, get_typename,
+                            import_instance)
 
 
 tests = Tests()
@@ -69,6 +71,18 @@ def repr_():
     assert repr(Config({'is': 1})) == "plastic.config.Config({'is': 1})"
     assert (repr(Config({'a': 1, 'is': 2})) ==
             "plastic.config.Config({'is': 2}, a=1)")
+
+
+class ConfigTestApp(BaseApp):
+    """Test app."""
+
+    conf_attr = config_property('conf_attr')
+
+
+@tests.test
+def config_property_():
+    app = ConfigTestApp({'conf_attr': 123})
+    assert app.conf_attr == 123
 
 
 @tests.test
