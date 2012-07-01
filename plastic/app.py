@@ -10,16 +10,26 @@ import itertools
 import sys
 import warnings
 
+from werkzeug.contrib.sessions import SessionStore
 from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import HTTPException, NotFound
 from werkzeug.routing import Map, RequestRedirect, Rule
 from werkzeug.serving import run_simple
 
-from .config import Config
+from .config import Config, config_property, import_instance
 from .exceptions import RenderError
 from .message import Request, Response
 from .resourcedir import ResourceDirectory
 from .warnings import AppWarning
+
+__all__ = 'DEFAULT_CONFIG', 'BaseApp'
+
+
+#: (:class:`collections.Mapping`) The default configuration mapping.
+DEFAULT_CONFIG = ImmutableDict(
+    session_store='werkzeug.contrib.sessions:FilesystemSessionStore'
+                  '(filename_template="plastic_%s.sess")'
+)
 
 
 class BaseApp(object):
@@ -356,11 +366,27 @@ class BaseApp(object):
         self.endpoints = dict(self.endpoints)
         rules = (rule.empty() for rule in self.rules)
         self.routing_map = Map(rules, strict_slashes=True)
-        self.config = Config()
+        self.config = Config(DEFAULT_CONFIG)
         self.config.update(config)
-        # FIXME
-        from werkzeug.contrib.sessions import FilesystemSessionStore
-        self.session_store = FilesystemSessionStore()
+        self.session_store = import_instance(self.session_store, SessionStore)
+        self.config.setdefault('session_cookie', {}) \
+                   .setdefault('key', 'sessionid')
+
+    #: (:class:`werkzeug.contrib.sessions.SessionStore`) The session store
+    #: instance an application uses.  It's a proxy to ``'session_store'``
+    #: value of :attr:`config`.
+    session_store = config_property('session_store')
+
+    #: (:class:`collections.Mapping`) The mapping of cookie settings
+    #: sessions will use.  It has the following configuable keys:
+    #:
+    #: - ``'key'``
+    #: - ``'max_age'``
+    #: - ``'domain'``
+    #: - ``'path'``
+    #: - ``'secure'``
+    #: - ``'httponly'``
+    session_cookie = config_property('session_cookie')
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -397,7 +423,9 @@ class BaseApp(object):
             session = request.session
             if session.should_save:
                 self.session_store.save(session)
-                response.set_cookie('sess', session.sid)
+                cookie_settings = dict(self.session_cookie)
+                cookie_key = cookie_settings.pop('key')
+                response.set_cookie(cookie_key, session.sid, **cookie_settings)
         return response(environ, start_response)
 
     @property

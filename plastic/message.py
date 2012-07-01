@@ -41,9 +41,14 @@ class Request(BaseRequest):
 
     @cached_property
     def session(self):
-        cookie_name = 'sess'
-        sid = self.cookies.get(cookie_name)
-        store = self.app.session_store
+        """(:class:`collections.MutableMapping`) The session storage.
+        If this value has changed in view functions the state will be
+        kept in future requests of the same session as well.
+
+        """
+        app = self.app
+        sid = self.cookies.get(app.session_cookie['key'])
+        store = app.session_store
         if sid:
             return store.get(sid)
         return store.new()

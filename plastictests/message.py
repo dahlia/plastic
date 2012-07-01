@@ -54,3 +54,15 @@ def session():
     body = client.get('/session').data.strip()
     assert body == '[1, 2, 3, 4, 5]'
 
+
+@tests.test
+def session_cookie_key():
+    app = App()
+    assert (app.session_cookie['key'] ==
+            app.config['session_cookie']['key'] ==
+            'sessionid')
+    app2 = App(config={'session_cookie': {'key': 'my_session_id'}})
+    assert (app2.session_cookie['key'] ==
+            app2.config['session_cookie']['key'] ==
+            'my_session_id')
+
