@@ -1,8 +1,8 @@
 from os.path import dirname, join
 
-from attest import Tests, assert_hook
+from attest import Tests, assert_hook, raises
 
-from plastic.config import Config
+from plastic.config import Config, get_typename, import_instance
 
 
 tests = Tests()
@@ -69,4 +69,49 @@ def repr_():
     assert repr(Config({'is': 1})) == "plastic.config.Config({'is': 1})"
     assert (repr(Config({'a': 1, 'is': 2})) ==
             "plastic.config.Config({'is': 2}, a=1)")
+
+
+@tests.test
+def import_instance_():
+    instance = import_instance('plastic.config:Config', Config)
+    assert isinstance(instance, Config)
+    instance = import_instance('plastic.config:Config()', Config)
+    assert isinstance(instance, Config)
+    instance = import_instance('plastic.config:Config(a=1, b=bare)', Config)
+    assert isinstance(instance, Config)
+    assert len(instance) == 2
+    assert instance['a'] == 1
+    assert instance['b'] == 'bare'
+    instance = import_instance('plastic.config:Config(pi = 3.14)', Config)
+    assert len(instance) == 1
+    assert instance['pi'] == 3.14
+    instance = import_instance('plastic.config:Config(null = None)', Config)
+    assert len(instance) == 1
+    assert instance['null'] is None
+    instance = import_instance('plastic.config:Config(a=True, b=False)', dict)
+    assert len(instance) == 2
+    assert instance['a'] is True
+    assert instance['b'] is False
+    instance = import_instance('plastic.config:Config(a="True", b=\'b\')', dict)
+    assert len(instance) == 2
+    assert instance['a'] == 'True'
+    assert instance['b'] == 'b'
+    with raises(ValueError):
+        import_instance('plastic.config:Config(a=1, 2)', Config)
+    with raises(ValueError):
+        import_instance('plastic.config:Config(', Config)
+    with raises(ValueError):
+        import_instance('plastic.config:Config(a,)', Config)
+    with raises(ValueError):
+        import_instance('plastic.config:Config(a=2 + 1)', Config)
+    with raises(ValueError):
+        import_instance('plastic.config:Config(a=f())', Config)
+    with raises(ValueError):
+        import_instance('plastic.config:Config(a=[1, 2])', Config)
+
+
+@tests.test
+def get_typename_():
+    assert get_typename(Config) == 'plastic.config.Config'
+    assert get_typename(xrange) == 'xrange'
 
