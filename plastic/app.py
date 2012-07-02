@@ -405,20 +405,18 @@ class BaseApp(object):
 
         """
         request = None
-        bound = self.routing_map.bind_to_environ(environ)
         try:
             try:
-                endpoint, values = bound.match()
+                request = Request(environ, app=self)
             except RequestRedirect as result:
                 pass
             else:
                 try:
-                    view_func = self.endpoints[endpoint]
+                    view_func = self.endpoints[request.endpoint]
                 except KeyError:
                     result = NotFound()
                 else:
-                    request = Request(environ, app=self, endpoint=endpoint)
-                    result = view_func(request, **values)
+                    result = view_func(request, **request.endpoint_values)
                     if isinstance(result, str):
                         result = Response(result)
         except HTTPException as result:

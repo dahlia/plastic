@@ -1,5 +1,5 @@
 from attest import Tests, assert_hook
-from werkzeug.test import Client
+from werkzeug.test import Client, EnvironBuilder
 from werkzeug.wrappers import Response
 
 from plastic.message import Request
@@ -10,9 +10,15 @@ from plastic.context import Context
 App = BaseApp.clone()
 
 
+@App.route('/')
+def endpoint_name(request):
+    return ''
+
+
 tests = Tests()
 app = App()
-request = Request({}, app=app, endpoint='endpoint_name')
+
+request = Request(EnvironBuilder().get_environ(), app=app)
 
 
 @tests.test
