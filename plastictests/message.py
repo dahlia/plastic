@@ -12,7 +12,12 @@ App = BaseApp.clone()
 
 @App.route('/')
 def endpoint_name(request):
-    return ''
+    return request.build_url('build_url_test', a=1, b=2, c=3)
+
+
+@App.route('/<int:a>/<int:b>')
+def build_url_test(request, a, b):
+    return repr((a, b))
 
 
 tests = Tests()
@@ -34,6 +39,13 @@ def endpoint():
 @tests.test
 def context():
     assert isinstance(request.context, Context)
+
+
+@tests.test
+def build_url():
+    client = Client(App(), Response)
+    response = client.get('/')
+    assert response.data == '/1/2?c=3'
 
 
 @App.route('/session', methods=['POST'])
