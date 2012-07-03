@@ -15,6 +15,7 @@ from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import HTTPException, NotFound
 from werkzeug.routing import Map, RequestRedirect, Rule
 from werkzeug.serving import run_simple
+from werkzeug.utils import cached_property
 
 from .config import Config, config_property, import_instance
 from .exceptions import RenderError
@@ -431,7 +432,7 @@ class BaseApp(object):
                 response.set_cookie(cookie_key, session.sid, **cookie_settings)
         return response(environ, start_response)
 
-    @property
+    @cached_property
     def template_directory(self):
         """(:class:`~plastic.resourcedir.ResourceDirectory`) The mapping
         object of the template directory.
