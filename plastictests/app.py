@@ -282,3 +282,21 @@ def render_template_():
         assert response.status_code == 406, way
         assert isinstance(error[0], RenderError), way
 
+
+@tests.test
+def view_returns_string():
+    App = BaseApp.clone()
+    @App.route('/str')
+    def return_str(request):
+        return 'okay str'
+    @App.route('/unicode')
+    def return_unicode(request):
+        return u'okay \uc720\ub2c8\ucf54\ub4dc'
+    client = Client(App(), Response)
+    response = client.get('/str')
+    assert response.status_code == 200
+    assert response.data == 'okay str'
+    response = client.get('/unicode')
+    assert response.status_code == 200
+    expected = 'okay \xec\x9c\xa0\xeb\x8b\x88\xec\xbd\x94\xeb\x93\x9c'
+    assert response.data == expected
