@@ -418,7 +418,7 @@ class BaseApp(object):
                     result = NotFound()
                 else:
                     result = view_func(request, **request.endpoint_values)
-                    if isinstance(result, str):
+                    if isinstance(result, basestring):
                         result = Response(result)
         except HTTPException as result:
             pass
