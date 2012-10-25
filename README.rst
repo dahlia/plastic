@@ -14,7 +14,7 @@ Plastic is a Python web framework built on top of Werkzeug_.
    App = BaseApp.clone()
 
    @App.route('/')
-   def hello():
+   def hello(request):
        return 'Hello, world!'
 
    if __name__ == '__main__':

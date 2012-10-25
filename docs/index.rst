@@ -17,6 +17,7 @@ Plastic is a Python web framework built on top of Werkzeug_.
 .. toctree::
    :maxdepth: 2
 
+   start
    design
    plastic
 
