@@ -19,7 +19,7 @@ Serializers
 """
 from werkzeug.exceptions import NotAcceptable
 
-from .message import Request
+from .message import Request, Response
 
 
 def render_template(request, path, values={}, **keywords):
@@ -106,8 +106,8 @@ def render(request, value, path, values={}, **keywords):
     :type values: :class:`collections.Mapping`
     :param \*\*keywords: the same to ``values`` except these are passed
                          by keywords
-    :returns: a rendered result
-    :rtype: :class:`basestring`
+    :returns: a rendered response
+    :rtype: :class:`~plastic.message.Response`
     :raises plastic.exceptions.RenderError:
        when there are no matched template files
     :raises werkzeug.exceptions.NotAcceptable:
@@ -125,10 +125,11 @@ def render(request, value, path, values={}, **keywords):
     rendering_method = rendering_mapping[mimetype]
     if isinstance(rendering_method, basestring):
         template_path = '{0}.{1}'.format(path, rendering_method)
-        return render_template(request, template_path, values, **keywords)
+        rendered = render_template(request, template_path, values, **keywords)
     elif callable(rendering_method):
-        return rendering_method(request, value)
-    raise TypeError('every value of rendering_mapping has to be callable '
-                    'or a suffix string; but rendering_mapping[{0!r}] is '
-                    '{1!r}'.format(mimetype, rendering_method))
-
+        rendered = rendering_method(request, value)
+    else:
+        raise TypeError('every value of rendering_mapping has to be callable '
+                        'or a suffix string; but rendering_mapping[{0!r}] is '
+                        '{1!r}'.format(mimetype, rendering_method))
+    return Response(rendered, headers={'Vary': 'Accept'}, mimetype=mimetype)

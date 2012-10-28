@@ -1,4 +1,5 @@
 import json
+import re
 
 from attest import Tests, assert_hook
 from werkzeug.test import Client
@@ -36,10 +37,15 @@ def render_():
     client = Client(RenderingTestApp(), Response)
     response = client.get('/', headers=[('Accept', 'text/html')])
     assert response.data.strip() == '<h1>3.14</h1>'
+    assert response.mimetype == 'text/html'
+    assert 'Accept' in response.vary
     response = client.get('/', headers=[('Accept', 'text/xml')])
     assert response.data.strip() == '<pi value="3.14"/>'
+    assert response.mimetype == 'text/xml'
+    assert 'Accept' in response.vary
     response = client.get('/', headers=[('Accept', 'application/json')])
     assert json.loads(response.data)['pi'] == 3.14
+    assert response.mimetype == 'application/json'
+    assert 'Accept' in response.vary
     response = client.get('/', headers=[('Accept', 'text/plain')])
     assert response.status_code == 406
-
