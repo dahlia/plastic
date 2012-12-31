@@ -11,7 +11,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os.path
+import sys, os.path, datetime
 
 # Whether it is built by ReadTheDocs.org
 readthedocs = os.environ.get('READTHEDOCS', '') == 'True'
@@ -50,7 +50,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Plastic'
-copyright = u'2012, Hong Minhee'
+copyright = str(datetime.date.today().year) + u', Hong Minhee'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
