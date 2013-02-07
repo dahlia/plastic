@@ -195,11 +195,11 @@ def import_instance(expression, type_):
             raise ValueError('invalid import expression: ' + repr(expression))
         import_name = match.group('import_string')
         cls = import_string(import_name)
-        if not isinstance(cls, type):
+        if not callable(cls):
             raise TypeError(
-                '{0} ({1!r}) is not a class object'.format(import_name, cls)
+                '{0} ({1!r}) is not callable'.format(import_name, cls)
             )
-        if not issubclass(cls, type_):
+        if isinstance(cls, type) and not issubclass(cls, type_):
             raise TypeError(
                 '{0} ({1!r}) is not a subtype of {2} ({3!r})'.format(
                     import_name, cls, get_typename(type_), type_
